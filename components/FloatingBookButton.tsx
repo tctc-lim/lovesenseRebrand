@@ -26,7 +26,7 @@ export function FloatingBookButton() {
     }, []);
 
     return (
-        <div className="fixed bottom-6 right-6 z-50 md:bottom-8 md:right-8">
+        <div className="fixed bottom-6 right-6 z-50 md:bottom-2 md:right-6">
             <div className="relative h-24 w-24 md:h-28 md:w-28">
                 {/* Curved Text Around Top */}
                 <svg

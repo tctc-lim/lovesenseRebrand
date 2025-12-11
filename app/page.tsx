@@ -129,7 +129,53 @@ export default function Home() {
           </div>
         </section>
 
+
         <div className="mx-auto w-full max-w-6xl px-4 pb-20 sm:px-6 lg:px-8">
+          {/* Our Services Section */}
+          <section className="section relative" id="service">
+            <SectionBubbles />
+            <div className="relative">
+              <SectionHeader
+                eyebrow="Our Services"
+                title="Support tailored to your relationship"
+                copy="Three focused tracks that meet you where you are—private, relationship, and marriage counseling."
+                align="center"
+              />
+              <div className="mt-12 grid gap-8 md:grid-cols-3">
+                {services.map((service) => (
+                  <Reveal key={service.slug}>
+                    <div className="group overflow-hidden rounded-3xl border border-purple-200 bg-white shadow-md transition hover:border-purple-300 hover:shadow-xl">
+                      <div className="relative h-64 overflow-hidden">
+                        <Image
+                          src={serviceImages[service.slug as keyof typeof serviceImages] || "/images/img13.jpeg"}
+                          alt={service.name}
+                          fill
+                          className="object-cover transition duration-500 group-hover:scale-110"
+                        />
+                        <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent" />
+                      </div>
+                      <div className="bg-white p-6">
+                        <h3 className="text-xl font-semibold text-slate-900">{service.name}</h3>
+                        <p className="mt-3 text-sm text-slate-700">{service.summary}</p>
+                        <Link
+                          href={`/services/${service.slug}`}
+                          className="mt-4 inline-flex items-center text-sm font-semibold text-brand-purple transition hover:text-brand-purple-light"
+                        >
+                          Learn more →
+                        </Link>
+                      </div>
+                    </div>
+                  </Reveal>
+                ))}
+              </div>
+              <div className="mt-8 text-center">
+                <Link href="/services" className="button button-ghost border-purple-200 text-brand-purple hover:bg-purple-50">
+                  Explore All Services
+                </Link>
+              </div>
+            </div>
+          </section>
+
           {/* Who We Are Section */}
           <section className="section relative" id="aboutUs">
             <SectionBubbles />
@@ -228,50 +274,7 @@ export default function Home() {
             </div>
           </section>
 
-          {/* Our Services Section */}
-          <section className="section relative" id="service">
-            <SectionBubbles />
-            <div className="relative">
-              <SectionHeader
-                eyebrow="Our Services"
-                title="Support tailored to your relationship"
-                copy="Three focused tracks that meet you where you are—private, relationship, and marriage counseling."
-                align="center"
-              />
-              <div className="mt-12 grid gap-8 md:grid-cols-3">
-                {services.map((service) => (
-                  <Reveal key={service.slug}>
-                    <div className="group overflow-hidden rounded-3xl border border-purple-200 bg-white shadow-md transition hover:border-purple-300 hover:shadow-xl">
-                      <div className="relative h-64 overflow-hidden">
-                        <Image
-                          src={serviceImages[service.slug as keyof typeof serviceImages] || "/images/img13.jpeg"}
-                          alt={service.name}
-                          fill
-                          className="object-cover transition duration-500 group-hover:scale-110"
-                        />
-                        <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent" />
-                      </div>
-                      <div className="bg-white p-6">
-                        <h3 className="text-xl font-semibold text-slate-900">{service.name}</h3>
-                        <p className="mt-3 text-sm text-slate-700">{service.summary}</p>
-                        <Link
-                          href={`/services/${service.slug}`}
-                          className="mt-4 inline-flex items-center text-sm font-semibold text-brand-purple transition hover:text-brand-purple-light"
-                        >
-                          Learn more →
-                        </Link>
-                      </div>
-                    </div>
-                  </Reveal>
-                ))}
-              </div>
-              <div className="mt-8 text-center">
-                <Link href="/services" className="button button-ghost border-purple-200 text-brand-purple hover:bg-purple-50">
-                  Explore All Services
-                </Link>
-              </div>
-            </div>
-          </section>
+
 
           {/* Books Section */}
           <section className="section relative">
