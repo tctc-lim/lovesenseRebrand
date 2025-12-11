@@ -51,6 +51,8 @@ export function generateBookingEmailHtml(data: {
     lastName: string;
     email: string;
     phone: string;
+    countryCode?: string;
+    country?: string;
     service: string;
     date: string;
     time: string;
@@ -78,6 +80,18 @@ export function generateBookingEmailHtml(data: {
                     <td style="padding: 10px 0; border-bottom: 1px solid #e0e0e0;"><strong>Phone:</strong></td>
                     <td style="padding: 10px 0; border-bottom: 1px solid #e0e0e0;">${data.phone}</td>
                 </tr>
+                ${data.countryCode ? `
+                <tr>
+                    <td style="padding: 10px 0; border-bottom: 1px solid #e0e0e0;"><strong>Country Code:</strong></td>
+                    <td style="padding: 10px 0; border-bottom: 1px solid #e0e0e0;">${data.countryCode}</td>
+                </tr>
+                ` : ""}
+                ${data.country ? `
+                <tr>
+                    <td style="padding: 10px 0; border-bottom: 1px solid #e0e0e0;"><strong>Country:</strong></td>
+                    <td style="padding: 10px 0; border-bottom: 1px solid #e0e0e0;">${data.country}</td>
+                </tr>
+                ` : ""}
                 <tr>
                     <td style="padding: 10px 0; border-bottom: 1px solid #e0e0e0;"><strong>Service:</strong></td>
                     <td style="padding: 10px 0; border-bottom: 1px solid #e0e0e0;">${data.service}</td>

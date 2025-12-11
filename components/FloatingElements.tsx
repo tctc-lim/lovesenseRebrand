@@ -2,7 +2,7 @@
 
 export function FloatingElements() {
     return (
-        <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+        <div className="pointer-events-none fixed inset-0 z-0 overflow-x-hidden overflow-y-hidden">
             {/* Big Floating Bubbles - Top Section */}
             <div className="absolute left-[5%] top-[15%] h-32 w-32 animate-float rounded-full bg-brand-lemon-15 blur-md" />
             <div className="absolute left-[85%] top-[25%] h-40 w-40 animate-float-delayed rounded-full bg-brand-purple-12 blur-md" />

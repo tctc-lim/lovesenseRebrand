@@ -187,8 +187,8 @@ export default function CookiePolicyPage() {
                                 </p>
                                 <p className="text-base leading-relaxed text-slate-700">
                                     You may withdraw consent at any time by adjusting your browser settings or contacting us.
-                                </p>
-                            </div>
+                        </p>
+                    </div>
                         </Reveal>
 
                         {/* Section 7: Updates to This Cookie Policy */}
@@ -200,8 +200,8 @@ export default function CookiePolicyPage() {
                                 </p>
                                 <p className="text-base leading-relaxed text-slate-700">
                                     Changes will be posted on this page with an updated &quot;Last Updated&quot; date.
-                                </p>
-                            </div>
+                        </p>
+                    </div>
                         </Reveal>
 
                         {/* Section 8: Contact Us */}
@@ -235,7 +235,7 @@ export default function CookiePolicyPage() {
                         </Reveal>
                     </div>
                 </section>
-            </div>
+                </div>
         </div>
     );
 }

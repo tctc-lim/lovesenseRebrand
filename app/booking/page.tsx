@@ -349,7 +349,7 @@ export default function BookingPage() {
                 <section className="section relative -mt-20">
                     <SectionBubbles />
                     <div className="relative">
-                        <Reveal>
+                    <Reveal>
                             <div className="rounded-3xl border-2 border-purple-200 bg-white p-8 md:p-12 shadow-xl">
                                 <h2 className="mb-6 text-2xl font-bold text-slate-900">Booking Form</h2>
                                 <form onSubmit={handleSubmit} className="space-y-6">

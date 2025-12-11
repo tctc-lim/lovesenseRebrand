@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendMail, generateBookingEmailHtml } from "@/lib/mail";
+import { getBookingsCollection } from "@/lib/mongodb";
 
 export async function POST(request: NextRequest) {
     try {
@@ -9,6 +10,8 @@ export async function POST(request: NextRequest) {
             last_name,
             email,
             phone,
+            countryCode,
+            country,
             service,
             appointmentDate,
             time,
@@ -48,6 +51,29 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // Parse appointment date
+        const appointmentDateTime = new Date(`${appointmentDate}T${time}`);
+
+        // Save booking to database
+        const bookingsCollection = await getBookingsCollection();
+        const result = await bookingsCollection.insertOne({
+            firstName: first_name,
+            lastName: last_name,
+            email,
+            phone,
+            countryCode: countryCode || null,
+            country: country || null,
+            service,
+            appointmentDate: appointmentDateTime,
+            time,
+            sessions,
+            price: parseFloat(price),
+            promoCode: promoCode || null,
+            status: "PENDING",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        });
+
         // Send email using Brevo
         const recipientEmail = process.env.BOOKING_EMAIL || "info.mylovesense@gmail.com";
         const subject = `New Booking Request from ${first_name} ${last_name}`;
@@ -56,6 +82,8 @@ export async function POST(request: NextRequest) {
             lastName: last_name,
             email,
             phone,
+            countryCode: countryCode || undefined,
+            country: country || undefined,
             service,
             date: appointmentDate,
             time,
@@ -73,7 +101,8 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({
             success: true,
-            message: "Booking request received and email sent",
+            message: "Booking request received and saved",
+            bookingId: result.insertedId.toString(),
         });
     } catch (error) {
         console.error("Booking error:", error);
@@ -83,4 +112,3 @@ export async function POST(request: NextRequest) {
         );
     }
 }
-

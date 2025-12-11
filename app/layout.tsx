@@ -52,7 +52,7 @@ export default function RootLayout({
         <div className="blur-blob cyan" />
         <div className="relative flex min-h-screen flex-col">
           <NavBar />
-          <main className="flex-1">{children}</main>
+          <main className="flex-1 overflow-x-hidden">{children}</main>
           <Footer />
           <FloatingBookButton />
         </div>

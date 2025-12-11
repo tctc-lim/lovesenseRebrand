@@ -45,7 +45,7 @@ export function NavBar() {
             <nav className={`${isHomePage ? "bg-transparent backdrop-blur-sm" : "glass"} relative flex items-center justify-between ${isHomePage ? "rounded-2xl" : "rounded-2xl"} px-5 py-3`}>
                 <Link href="/" className="flex items-center">
                     <Image
-                        src={isHomePage && !scrolledPastHero ? "/images/logos/logo3.png" : "/images/logos/logo2.png"}
+                        src="/images/logos/logo2.png"
                         alt="Love Sense Logo"
                         width={150}
                         height={50}
@@ -57,13 +57,13 @@ export function NavBar() {
                 <button
                     type="button"
                     onClick={() => setOpen((v) => !v)}
-                    className={`inline-flex items-center gap-2 rounded-full border ${isHomePage ? "border-white/30" : "border-white/10"} px-3 py-2 text-sm ${isHomePage ? "text-white" : "text-slate-200"} transition hover:bg-white/10 md:hidden`}
+                    className={`inline-flex items-center gap-2 rounded-full border border-purple-200 px-3 py-2 text-sm text-brand-purple transition hover:bg-white/10 md:hidden`}
                     aria-label="Toggle menu"
                 >
                     <div className="flex flex-col gap-[6px]">
-                        <span className="block h-0.5 w-5 bg-white" />
-                        <span className="block h-0.5 w-5 bg-white" />
-                        <span className="block h-0.5 w-5 bg-white" />
+                        <span className="block h-0.5 w-5 bg-brand-purple" />
+                        <span className="block h-0.5 w-5 bg-brand-purple" />
+                        <span className="block h-0.5 w-5 bg-brand-purple" />
                     </div>
                     Menu
                 </button>
@@ -75,8 +75,8 @@ export function NavBar() {
                                 <Link
                                     href={link.href}
                                     className={`rounded-full px-3 py-2 transition ${isActive(link.href)
-                                        ? isHomePage && !scrolledPastHero ? "!bg-white/20 !text-white" : "!bg-white/10 !text-brand-purple"
-                                        : isHomePage && !scrolledPastHero ? "!text-white/90 !hover:bg-white/10 !hover:text-white" : "!text-brand-purple !hover:bg-purple-50 !hover:text-brand-purple"
+                                        ? "!bg-white/10 !text-brand-purple"
+                                        : "!text-brand-purple !hover:bg-purple-50 !hover:text-brand-purple"
                                         }`}
                                 >
                                     {link.label}

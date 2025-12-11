@@ -2,127 +2,75 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { Reveal } from "@/components/Reveal";
 import { SectionBubbles } from "@/components/SectionBubbles";
 
-// Mock blog posts data - replace with actual data from CMS or API
-const featuredPost = {
-    id: 1,
-    title: "Understanding Emotional Wellness: A Guide to Better Mental Health",
-    excerpt:
-        "Discover practical strategies for managing stress, building resilience, and nurturing your emotional well-being in everyday life.",
-    author: "Dr. Sarah Mensah",
-    date: "January 15, 2025",
-    category: "Mental Health",
-    image: "/images/slid24.JPEG",
-    readTime: "5 min read",
-    slug: "understanding-emotional-wellness",
-};
+interface BlogPost {
+    id: number;
+    title: string;
+    excerpt: string;
+    content?: string;
+    author: string;
+    date: string;
+    category: string;
+    image: string;
+    readTime: string;
+    slug: string;
+}
 
-const blogPosts = [
-    {
-        id: 2,
-        title: "5 Signs Your Relationship Needs Professional Support",
-        excerpt:
-            "Recognizing when to seek couples counseling can be the first step toward healing and strengthening your partnership.",
-        author: "Michael Osei",
-        date: "January 12, 2025",
-        category: "Relationships",
-        image: "/images/img4.jpeg",
-        readTime: "4 min read",
-        slug: "signs-relationship-needs-support",
-    },
-    {
-        id: 3,
-        title: "Healing from Heartbreak: A Journey to Wholeness",
-        excerpt:
-            "Navigating the pain of loss and finding hope again. Learn how to process grief and rebuild your emotional foundation.",
-        author: "Ama Asante",
-        date: "January 10, 2025",
-        category: "Healing",
-        image: "/images/img13.jpeg",
-        readTime: "6 min read",
-        slug: "healing-from-heartbreak",
-    },
-    {
-        id: 4,
-        title: "Building Healthy Communication in Your Relationship",
-        excerpt:
-            "Effective communication is the foundation of strong relationships. Discover techniques that foster understanding and connection.",
-        author: "Dr. Sarah Mensah",
-        date: "January 8, 2025",
-        category: "Relationships",
-        image: "/images/img5.jpeg",
-        readTime: "5 min read",
-        slug: "healthy-communication-relationships",
-    },
-    {
-        id: 5,
-        title: "Managing Anxiety: Practical Tools for Daily Life",
-        excerpt:
-            "Anxiety doesn't have to control your life. Explore evidence-based techniques to manage anxious thoughts and feelings.",
-        author: "Michael Osei",
-        date: "January 5, 2025",
-        category: "Mental Health",
-        image: "/images/mockup/1.jpg",
-        readTime: "7 min read",
-        slug: "managing-anxiety-practical-tools",
-    },
-    {
-        id: 6,
-        title: "The Importance of Self-Care in Mental Wellness",
-        excerpt:
-            "Self-care isn't selfish—it's essential. Learn how to prioritize your well-being and create sustainable self-care practices.",
-        author: "Ama Asante",
-        date: "January 3, 2025",
-        category: "Wellness",
-        image: "/images/mockup/2.jpg",
-        readTime: "4 min read",
-        slug: "importance-self-care-mental-wellness",
-    },
-    {
-        id: 7,
-        title: "Navigating Family Dynamics: Finding Balance and Harmony",
-        excerpt:
-            "Family relationships can be complex. Discover strategies for improving communication and resolving conflicts with loved ones.",
-        author: "Dr. Sarah Mensah",
-        date: "December 30, 2024",
-        category: "Family",
-        image: "/images/mockup/3.jpg",
-        readTime: "6 min read",
-        slug: "navigating-family-dynamics",
-    },
-    {
-        id: 8,
-        title: "Overcoming Trauma: Steps Toward Recovery",
-        excerpt:
-            "Healing from trauma is possible. Learn about trauma-informed approaches and the path to recovery and resilience.",
-        author: "Michael Osei",
-        date: "December 28, 2024",
-        category: "Healing",
-        image: "/images/mockup/5.jpg",
-        readTime: "8 min read",
-        slug: "overcoming-trauma-recovery",
-    },
-    {
-        id: 9,
-        title: "Teen Mental Health: Supporting Young People Through Challenges",
-        excerpt:
-            "Understanding the unique mental health needs of teenagers and how to provide effective support during difficult times.",
-        author: "Ama Asante",
-        date: "December 25, 2024",
-        category: "Youth",
-        image: "/images/mockup/6.jpg",
-        readTime: "5 min read",
-        slug: "teen-mental-health-support",
-    },
-];
-
-const categories = ["All", "Mental Health", "Relationships", "Healing", "Wellness", "Family", "Youth"];
+// Categories will be dynamically generated from blog tags
 
 export default function BlogPage() {
+    const [blogs, setBlogs] = useState<BlogPost[]>([]);
+    const [featured, setFeatured] = useState<BlogPost | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [categories, setCategories] = useState<string[]>(["All"]);
+
+    useEffect(() => {
+        fetchBlogs();
+    }, []);
+
+    const fetchBlogs = async () => {
+        try {
+            const response = await fetch("/api/blogs/public?limit=20");
+            const data = await response.json();
+            if (data.success && data.blogs && data.blogs.length > 0) {
+                setBlogs(data.blogs.slice(1)); // All except first
+                setFeatured(data.blogs[0]); // First blog as featured
+
+                // Extract unique categories from blogs
+                const uniqueCategories = new Set<string>(["All"]);
+                data.blogs.forEach((blog: BlogPost) => {
+                    if (blog.category) {
+                        uniqueCategories.add(blog.category);
+                    }
+                });
+                setCategories(Array.from(uniqueCategories));
+            } else {
+                // No blogs found
+                setBlogs([]);
+                setFeatured(null);
+            }
+        } catch (error) {
+            console.error("Error fetching blogs:", error);
+            setBlogs([]);
+            setFeatured(null);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="flex min-h-screen items-center justify-center">
+                <div className="text-lg text-slate-600">Loading blogs...</div>
+            </div>
+        );
+    }
+
     return (
-        <div className="relative isolate overflow-hidden">
+        <div className="relative isolate overflow-hidden overflow-x-hidden">
             {/* Hero Section */}
             <section className="relative h-[50vh] min-h-[400px] flex items-center justify-center overflow-hidden">
                 <div className="absolute inset-0">
@@ -145,58 +93,60 @@ export default function BlogPage() {
 
             <div className="mx-auto w-full max-w-7xl px-4 pb-20 sm:px-6 lg:px-8">
                 {/* Featured Post */}
-                <section className="section relative -mt-20">
-                    <SectionBubbles />
-                    <div className="relative">
-                        <Reveal>
-                            <div className="group relative overflow-hidden rounded-3xl shadow-2xl transition-all hover:shadow-purple-500/30">
-                                <div className="relative h-[500px] md:h-[600px]">
-                                    <Image
-                                        src={featuredPost.image}
-                                        alt={featuredPost.title}
-                                        fill
-                                        className="object-cover transition-transform duration-700 group-hover:scale-110"
-                                    />
-                                    <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/50 to-transparent" />
-                                    <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12">
-                                        <div className="mb-4 flex items-center gap-4 flex-wrap">
-                                            <span className="rounded-full bg-brand-purple px-4 py-1.5 text-sm font-semibold text-white">
-                                                {featuredPost.category}
-                                            </span>
-                                            <span className="text-sm text-white/80">{featuredPost.readTime}</span>
-                                            <span className="text-sm text-white/80">{featuredPost.date}</span>
-                                        </div>
-                                        <h2 className="mb-4 text-3xl font-bold text-white sm:text-4xl md:text-5xl">
-                                            {featuredPost.title}
-                                        </h2>
-                                        <p className="mb-6 text-lg leading-relaxed text-white/95 sm:text-xl">{featuredPost.excerpt}</p>
-                                        <div className="mb-4 flex items-center gap-3">
-                                            <div className="h-10 w-10 rounded-full bg-white/20 backdrop-blur-sm" />
-                                            <div>
-                                                <p className="text-sm font-semibold text-white">{featuredPost.author}</p>
-                                                <p className="text-xs text-white/70">Counselor</p>
+                {featured && (
+                    <section className="section relative -mt-20">
+                        <SectionBubbles />
+                        <div className="relative">
+                            <Reveal>
+                                <div className="group relative overflow-hidden rounded-3xl shadow-2xl transition-all hover:shadow-purple-500/30">
+                                    <div className="relative h-[500px] md:h-[600px]">
+                                        <Image
+                                            src={featured.image}
+                                            alt={featured.title}
+                                            fill
+                                            className="object-cover transition-transform duration-700 group-hover:scale-110"
+                                        />
+                                        <div className="absolute inset-0 bg-black/50" />
+                                        <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12">
+                                            <div className="mb-4 flex items-center gap-4 flex-wrap">
+                                                <span className="rounded-full bg-brand-purple px-4 py-1.5 text-sm font-semibold text-white">
+                                                    {featured.category}
+                                                </span>
+                                                <span className="text-sm text-white/80">{featured.readTime}</span>
+                                                <span className="text-sm text-white/80">{featured.date}</span>
                                             </div>
+                                            <h2 className="mb-4 text-3xl font-bold text-white sm:text-4xl md:text-5xl">
+                                                {featured.title}
+                                            </h2>
+                                            <p className="mb-6 text-lg leading-relaxed text-white/95 sm:text-xl">{featured.excerpt}</p>
+                                            <div className="mb-4 flex items-center gap-3">
+                                                <div className="h-10 w-10 rounded-full bg-white/20 backdrop-blur-sm" />
+                                                <div>
+                                                    <p className="text-sm font-semibold text-white">{featured.author}</p>
+                                                    <p className="text-xs text-white/70">Counselor</p>
+                                                </div>
+                                            </div>
+                                            <Link
+                                                href={`/blog/${featured.slug}`}
+                                                className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-base font-semibold text-brand-purple shadow-xl transition hover:-translate-y-1 hover:shadow-2xl"
+                                            >
+                                                Read Article
+                                                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={2}
+                                                        d="M17 8l4 4m0 0l-4 4m4-4H3"
+                                                    />
+                                                </svg>
+                                            </Link>
                                         </div>
-                                        <Link
-                                            href={`/blog/${featuredPost.slug}`}
-                                            className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-base font-semibold text-brand-purple shadow-xl transition hover:-translate-y-1 hover:shadow-2xl"
-                                        >
-                                            Read Article
-                                            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    d="M17 8l4 4m0 0l-4 4m4-4H3"
-                                                />
-                                            </svg>
-                                        </Link>
                                     </div>
                                 </div>
-                            </div>
-                        </Reveal>
-                    </div>
-                </section>
+                            </Reveal>
+                        </div>
+                    </section>
+                )}
 
                 {/* Category Filter */}
                 <section className="section relative">
@@ -216,55 +166,71 @@ export default function BlogPage() {
                 </section>
 
                 {/* Blog Posts Grid */}
-                <section className="section relative">
-                    <SectionBubbles />
-                    <div className="relative">
-                        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                            {blogPosts.map((post, index) => (
-                                <Reveal key={post.id} delay={index * 0.1}>
-                                    <Link href={`/blog/${post.slug}`} className="group block">
-                                        <div className="relative overflow-hidden rounded-3xl border-2 border-purple-200 bg-white shadow-xl transition-all hover:border-brand-purple hover:shadow-2xl">
-                                            {/* Image */}
-                                            <div className="relative h-64 overflow-hidden">
-                                                <Image
-                                                    src={post.image}
-                                                    alt={post.title}
-                                                    fill
-                                                    className="object-cover transition-transform duration-700 group-hover:scale-110"
-                                                />
-                                                <div className="absolute top-4 left-4">
-                                                    <span className="rounded-full bg-brand-purple px-3 py-1 text-xs font-semibold text-white">
-                                                        {post.category}
-                                                    </span>
+                {blogs.length > 0 ? (
+                    <section className="section relative">
+                        <SectionBubbles />
+                        <div className="relative">
+                            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+                                {blogs.map((post, index) => (
+                                    <Reveal key={post.id} delay={index * 0.1}>
+                                        <Link href={`/blog/${post.slug}`} className="group block">
+                                            <div className="relative overflow-hidden rounded-3xl border-2 border-purple-200 bg-white shadow-xl transition-all hover:border-brand-purple hover:shadow-2xl">
+                                                {/* Image */}
+                                                <div className="relative h-64 overflow-hidden">
+                                                    <Image
+                                                        src={post.image}
+                                                        alt={post.title}
+                                                        fill
+                                                        className="object-cover transition-transform duration-700 group-hover:scale-110"
+                                                    />
+                                                    <div className="absolute top-4 left-4">
+                                                        <span className="rounded-full bg-brand-purple px-3 py-1 text-xs font-semibold text-white">
+                                                            {post.category}
+                                                        </span>
+                                                    </div>
                                                 </div>
-                                            </div>
 
-                                            {/* Content */}
-                                            <div className="p-6">
-                                                <div className="mb-3 flex items-center gap-3 text-xs text-slate-500">
-                                                    <span>{post.date}</span>
-                                                    <span>•</span>
-                                                    <span>{post.readTime}</span>
-                                                </div>
-                                                <h3 className="mb-3 text-xl font-bold text-slate-900 transition group-hover:text-brand-purple">
-                                                    {post.title}
-                                                </h3>
-                                                <p className="mb-4 text-sm leading-relaxed text-slate-600">{post.excerpt}</p>
-                                                <div className="flex items-center gap-3">
-                                                    <div className="h-8 w-8 rounded-full bg-purple-100" />
-                                                    <div>
-                                                        <p className="text-xs font-semibold text-slate-900">{post.author}</p>
-                                                        <p className="text-xs text-slate-500">Counselor</p>
+                                                {/* Content */}
+                                                <div className="p-6">
+                                                    <div className="mb-3 flex items-center gap-3 text-xs text-slate-500">
+                                                        <span>{post.date}</span>
+                                                        <span>•</span>
+                                                        <span>{post.readTime}</span>
+                                                    </div>
+                                                    <h3 className="mb-3 text-xl font-bold text-slate-900 transition group-hover:text-brand-purple">
+                                                        {post.title}
+                                                    </h3>
+                                                    <p className="mb-4 text-sm leading-relaxed text-slate-600">{post.excerpt}</p>
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="h-8 w-8 rounded-full bg-purple-100" />
+                                                        <div>
+                                                            <p className="text-xs font-semibold text-slate-900">{post.author}</p>
+                                                            <p className="text-xs text-slate-500">Counselor</p>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </Link>
-                                </Reveal>
-                            ))}
+                                        </Link>
+                                    </Reveal>
+                                ))}
+                            </div>
                         </div>
-                    </div>
-                </section>
+                    </section>
+                ) : !loading && (
+                    <section className="section relative">
+                        <SectionBubbles />
+                        <div className="relative">
+                            <Reveal>
+                                <div className="rounded-3xl bg-white p-12 text-center shadow-xl">
+                                    <h2 className="mb-4 text-2xl font-bold text-slate-900">No Blog Posts Yet</h2>
+                                    <p className="text-slate-600">
+                                        Check back soon for insightful articles and helpful content.
+                                    </p>
+                                </div>
+                            </Reveal>
+                        </div>
+                    </section>
+                )}
 
                 {/* Newsletter CTA */}
                 <section className="section relative">

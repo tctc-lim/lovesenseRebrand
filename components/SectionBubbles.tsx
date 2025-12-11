@@ -2,7 +2,7 @@
 
 export function SectionBubbles() {
     return (
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 overflow-x-hidden overflow-y-hidden">
             {/* Large bubbles for this section */}
             <div className="absolute left-[-5%] top-[10%] h-48 w-48 animate-float rounded-full bg-brand-lemon-12 blur-xl" />
             <div className="absolute right-[-5%] top-[30%] h-56 w-56 animate-float-delayed rounded-full bg-brand-purple-10 blur-xl" />

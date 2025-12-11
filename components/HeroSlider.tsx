@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 
 const slides = [
     {
-        image: "https://mylovesense.online/images/slid21.jpg",
+        image: "/images/slider/slid22.jpg",
         eyebrow: "WITH US",
         title: "You can find happiness again",
         cta: "Book Now",
@@ -14,7 +14,7 @@ const slides = [
         buttonText: "#bcd630",
     },
     {
-        image: "https://mylovesense.online/images/slid22.jpg",
+        image: "/images/slider/slid21.jpg",
         eyebrow: "WITH Us",
         title: "You can\nhave a PERFECT Relationship",
         cta: "Talk to a Counselor",
