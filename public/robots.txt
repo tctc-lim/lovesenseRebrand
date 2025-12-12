@@ -1,0 +1,20 @@
+# robots.txt for mylovesense.online
+
+User-agent: *
+Allow: /
+
+# Disallow admin and API routes
+Disallow: /admin/
+Disallow: /api/
+
+# Allow public pages
+Allow: /
+Allow: /blog
+Allow: /services
+Allow: /about
+Allow: /contact
+Allow: /booking
+
+# Sitemap location
+Sitemap: https://mylovesense.online/sitemap.xml
+
