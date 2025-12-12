@@ -37,10 +37,19 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Check if user is admin
-        if (user.role !== "admin") {
+        // Check if user is admin or superAdmin
+        const role = user.role.toLowerCase();
+        if (role !== "admin" && role !== "superadmin") {
             return NextResponse.json(
                 { success: false, error: "Admin access required" },
+                { status: 403 }
+            );
+        }
+
+        // Check if admin is suspended
+        if (user.status === "SUSPENDED") {
+            return NextResponse.json(
+                { success: false, error: "Your account has been suspended. Please contact an administrator." },
                 { status: 403 }
             );
         }

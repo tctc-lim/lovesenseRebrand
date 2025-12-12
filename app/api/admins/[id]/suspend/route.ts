@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUsersCollection } from "@/lib/mongodb";
-import { requireAdmin } from "@/lib/auth";
+import { requireSuperAdmin } from "@/lib/auth";
 import { ObjectId } from "mongodb";
 
 // PUT - Suspend/Activate an admin
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
-        requireAdmin(request);
+        requireSuperAdmin(request);
         const { id } = await params;
         const body = await request.json();
         const { status } = body;
@@ -21,7 +21,10 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         const usersCollection = await getUsersCollection();
 
         // Check if admin exists and get their email
-        const admin = await usersCollection.findOne({ _id: new ObjectId(id), role: "admin" });
+        const admin = await usersCollection.findOne({
+            _id: new ObjectId(id),
+            $or: [{ role: "admin" }, { role: "superAdmin" }]
+        });
 
         if (!admin) {
             return NextResponse.json({ success: false, error: "Admin not found" }, { status: 404 });
@@ -36,7 +39,10 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         }
 
         const result = await usersCollection.updateOne(
-            { _id: new ObjectId(id), role: "admin" },
+            {
+                _id: new ObjectId(id),
+                $or: [{ role: "admin" }, { role: "superAdmin" }]
+            },
             { $set: { status, updatedAt: new Date() } }
         );
 

@@ -7,7 +7,7 @@ export interface AuthUser {
     id: number;
     name: string;
     email: string;
-    role: string;
+    role: string; // "superAdmin" or "admin"
 }
 
 export function verifyToken(token: string): AuthUser | null {
@@ -44,8 +44,17 @@ export function requireAuth(request: NextRequest): AuthUser {
 
 export function requireAdmin(request: NextRequest): AuthUser {
     const user = requireAuth(request);
-    if (user.role.toLowerCase() !== "admin") {
+    const role = user.role.toLowerCase();
+    if (role !== "admin" && role !== "superadmin") {
         throw new Error("Forbidden: Admin access required");
+    }
+    return user;
+}
+
+export function requireSuperAdmin(request: NextRequest): AuthUser {
+    const user = requireAuth(request);
+    if (user.role.toLowerCase() !== "superadmin") {
+        throw new Error("Forbidden: Super Admin access required");
     }
     return user;
 }

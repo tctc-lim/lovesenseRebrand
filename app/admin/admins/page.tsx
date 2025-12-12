@@ -9,6 +9,7 @@ interface Admin {
     name: string;
     email: string;
     role: string;
+    status: string;
     createdAt: string;
 }
 
@@ -19,13 +20,13 @@ export default function AdminsPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [showAddForm, setShowAddForm] = useState(false);
+    const [currentUser, setCurrentUser] = useState<{ role: string } | null>(null);
     const [formData, setFormData] = useState({
         name: "",
         email: "",
-        password: "",
-        confirmPassword: "",
     });
     const [submitting, setSubmitting] = useState(false);
+    const [hasSuperAdmin, setHasSuperAdmin] = useState(false);
 
     useEffect(() => {
         const verifyAuth = async () => {
@@ -48,6 +49,19 @@ export default function AdminsPage() {
                     return;
                 }
 
+                // Try to get user from localStorage first (fallback)
+                try {
+                    const storedUser = localStorage.getItem("adminUser");
+                    if (storedUser) {
+                        const parsedUser = JSON.parse(storedUser);
+                        if (parsedUser.role) {
+                            setCurrentUser(parsedUser);
+                        }
+                    }
+                } catch {
+                    // Ignore localStorage parse errors
+                }
+
                 const response = await fetch("/api/auth/me", {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -60,6 +74,11 @@ export default function AdminsPage() {
                     localStorage.removeItem("adminUser");
                     router.push("/admin/login");
                 } else {
+                    // Also update localStorage with current user data
+                    if (data.user) {
+                        localStorage.setItem("adminUser", JSON.stringify(data.user));
+                    }
+                    setCurrentUser(data.user);
                     setAuthenticating(false);
                     fetchAdmins();
                 }
@@ -92,6 +111,11 @@ export default function AdminsPage() {
             const data = await response.json();
             if (data.success) {
                 setAdmins(data.admins || []);
+                // Check if any superAdmin exists
+                const hasSuper = (data.admins || []).some((admin: Admin) =>
+                    admin.role?.toLowerCase() === "superadmin"
+                );
+                setHasSuperAdmin(hasSuper);
             } else {
                 // If no admins exist, allow showing the form
                 if (data.error?.includes("Unauthorized") || data.error?.includes("Forbidden")) {
@@ -112,13 +136,8 @@ export default function AdminsPage() {
         e.preventDefault();
         setError("");
 
-        if (formData.password !== formData.confirmPassword) {
-            setError("Passwords do not match");
-            return;
-        }
-
-        if (formData.password.length < 6) {
-            setError("Password must be at least 6 characters");
+        if (!formData.name || !formData.email) {
+            setError("Name and email are required");
             return;
         }
 
@@ -141,7 +160,6 @@ export default function AdminsPage() {
                 body: JSON.stringify({
                     name: formData.name,
                     email: formData.email,
-                    password: formData.password,
                     role: "admin",
                 }),
             });
@@ -150,7 +168,7 @@ export default function AdminsPage() {
 
             if (data.success) {
                 setShowAddForm(false);
-                setFormData({ name: "", email: "", password: "", confirmPassword: "" });
+                setFormData({ name: "", email: "" });
 
                 // If this is the first admin and token is returned, save it
                 if (data.token) {
@@ -160,7 +178,7 @@ export default function AdminsPage() {
                 }
 
                 fetchAdmins(); // Refresh the list
-                alert("Admin created successfully!");
+                alert(data.message || "Admin created successfully! Credentials have been sent to their email.");
             } else {
                 setError(data.error || "Failed to create admin");
             }
@@ -171,14 +189,45 @@ export default function AdminsPage() {
         }
     };
 
-    const handleSuspend = async (adminId: string, adminEmail: string) => {
+    const handlePromote = async (adminId: string) => {
+        if (!confirm("Are you sure you want to promote this admin to superAdmin? This will give them full admin management privileges.")) {
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem("adminToken");
+            const response = await fetch("/api/admins/promote", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ adminId }),
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                fetchAdmins(); // Refresh the list
+                alert("Admin promoted to superAdmin successfully!");
+            } else {
+                alert(data.error || "Failed to promote admin");
+            }
+        } catch (err) {
+            alert("Failed to promote admin");
+        }
+    };
+
+    const handleSuspend = async (adminId: string, adminEmail: string, currentStatus: string) => {
         // Prevent suspending protected email
         if (adminEmail === "chukkydave@gmail.com") {
             alert("This admin cannot be suspended");
             return;
         }
 
-        if (!confirm("Are you sure you want to suspend this admin?")) {
+        const newStatus = currentStatus === "SUSPENDED" ? "ACTIVE" : "SUSPENDED";
+        const action = newStatus === "SUSPENDED" ? "suspend" : "activate";
+
+        if (!confirm(`Are you sure you want to ${action} this admin?`)) {
             return;
         }
 
@@ -190,18 +239,18 @@ export default function AdminsPage() {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ status: "SUSPENDED" }),
+                body: JSON.stringify({ status: newStatus }),
             });
 
             const data = await response.json();
             if (data.success) {
                 fetchAdmins(); // Refresh the list
-                alert("Admin suspended successfully");
+                alert(`Admin ${action}d successfully`);
             } else {
-                alert(data.error || "Failed to suspend admin");
+                alert(data.error || `Failed to ${action} admin`);
             }
         } catch (err) {
-            alert("Failed to suspend admin");
+            alert(`Failed to ${action} admin`);
         }
     };
 
@@ -225,12 +274,26 @@ export default function AdminsPage() {
                 <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
                     <h1 className="text-2xl font-bold text-slate-900">Admin Management</h1>
                     <div className="flex items-center gap-4">
-                        <button
-                            onClick={() => setShowAddForm(!showAddForm)}
-                            className="rounded-lg bg-brand-purple px-4 py-2 font-semibold text-white transition hover:bg-brand-purple/90"
-                        >
-                            {showAddForm ? "Cancel" : "+ Add Admin"}
-                        </button>
+                        {(() => {
+                            // Check both currentUser from state and localStorage
+                            const userRole = currentUser?.role || (() => {
+                                try {
+                                    const stored = localStorage.getItem("adminUser");
+                                    return stored ? JSON.parse(stored).role : null;
+                                } catch {
+                                    return null;
+                                }
+                            })();
+                            const isSuperAdmin = userRole?.toLowerCase() === "superadmin";
+                            return isSuperAdmin && (
+                                <button
+                                    onClick={() => setShowAddForm(!showAddForm)}
+                                    className="rounded-lg bg-brand-purple px-4 py-2 font-semibold text-white transition hover:bg-brand-purple/90"
+                                >
+                                    {showAddForm ? "Cancel" : "+ Add Admin"}
+                                </button>
+                            );
+                        })()}
                         <Link
                             href="/admin"
                             className="rounded-lg border-2 border-slate-300 px-4 py-2 font-semibold text-slate-700 transition hover:bg-slate-100"
@@ -280,35 +343,9 @@ export default function AdminsPage() {
                                     placeholder="admin@example.com"
                                 />
                             </div>
-                            <div>
-                                <label htmlFor="password" className="mb-2 block text-sm font-semibold text-slate-700">
-                                    Password
-                                </label>
-                                <input
-                                    id="password"
-                                    type="password"
-                                    value={formData.password}
-                                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                    required
-                                    minLength={6}
-                                    className="w-full rounded-lg border-2 border-purple-200 px-4 py-2 focus:border-brand-purple focus:outline-none"
-                                    placeholder="Minimum 6 characters"
-                                />
-                            </div>
-                            <div>
-                                <label htmlFor="confirmPassword" className="mb-2 block text-sm font-semibold text-slate-700">
-                                    Confirm Password
-                                </label>
-                                <input
-                                    id="confirmPassword"
-                                    type="password"
-                                    value={formData.confirmPassword}
-                                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                                    required
-                                    minLength={6}
-                                    className="w-full rounded-lg border-2 border-purple-200 px-4 py-2 focus:border-brand-purple focus:outline-none"
-                                    placeholder="Confirm password"
-                                />
+                            <div className="rounded-lg bg-blue-50 p-3 text-sm text-blue-700">
+                                <p className="font-semibold">Note:</p>
+                                <p>A secure password will be automatically generated and sent to the admin&apos;s email address.</p>
                             </div>
                             <button
                                 type="submit"
@@ -356,24 +393,73 @@ export default function AdminsPage() {
                                         <td className="whitespace-nowrap px-6 py-4 text-sm text-slate-900">{admin.name}</td>
                                         <td className="px-6 py-4 text-sm text-slate-900">{admin.email}</td>
                                         <td className="px-6 py-4 text-sm text-slate-900">
-                                            <span className="rounded-full bg-brand-purple px-3 py-1 text-xs font-semibold text-white">
-                                                {admin.role}
-                                            </span>
+                                            <div className="flex flex-col gap-1">
+                                                <span className={`rounded-full px-3 py-1 text-xs font-semibold text-white ${admin.role?.toLowerCase() === "superadmin"
+                                                    ? "bg-gradient-to-r from-purple-600 to-purple-800"
+                                                    : "bg-brand-purple"
+                                                    }`}>
+                                                    {admin.role === "superAdmin" ? "Super Admin" : admin.role}
+                                                </span>
+                                                <span className={`text-xs font-semibold ${admin.status === "SUSPENDED" ? "text-red-600" : "text-green-600"
+                                                    }`}>
+                                                    {admin.status || "ACTIVE"}
+                                                </span>
+                                            </div>
                                         </td>
                                         <td className="px-6 py-4 text-sm text-slate-500">
                                             {new Date(admin.createdAt).toLocaleDateString()}
                                         </td>
                                         <td className="px-6 py-4 text-sm">
-                                            {admin.email === "chukkydave@gmail.com" ? (
-                                                <span className="text-xs text-slate-400 italic">Protected</span>
-                                            ) : (
-                                                <button
-                                                    onClick={() => handleSuspend(admin._id, admin.email)}
-                                                    className="rounded-lg bg-red-500 px-3 py-1 text-xs font-semibold text-white transition hover:bg-red-600"
-                                                >
-                                                    Suspend
-                                                </button>
-                                            )}
+                                            <div className="flex flex-col gap-2">
+                                                {admin.email === "chukkydave@gmail.com" ? (
+                                                    <span className="text-xs text-slate-400 italic">Protected</span>
+                                                ) : (() => {
+                                                    const userRole = currentUser?.role || (() => {
+                                                        try {
+                                                            const stored = localStorage.getItem("adminUser");
+                                                            return stored ? JSON.parse(stored).role : null;
+                                                        } catch {
+                                                            return null;
+                                                        }
+                                                    })();
+                                                    const isSuperAdmin = userRole?.toLowerCase() === "superadmin";
+
+                                                    if (isSuperAdmin) {
+                                                        return admin.status === "SUSPENDED" ? (
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-xs text-red-600 font-semibold">Suspended</span>
+                                                                <button
+                                                                    onClick={() => handleSuspend(admin._id, admin.email, admin.status)}
+                                                                    className="rounded-lg bg-green-500 px-3 py-1 text-xs font-semibold text-white transition hover:bg-green-600"
+                                                                >
+                                                                    Activate
+                                                                </button>
+                                                            </div>
+                                                        ) : (
+                                                            <button
+                                                                onClick={() => handleSuspend(admin._id, admin.email, admin.status)}
+                                                                className="rounded-lg bg-red-500 px-3 py-1 text-xs font-semibold text-white transition hover:bg-red-600"
+                                                            >
+                                                                Suspend
+                                                            </button>
+                                                        );
+                                                    }
+                                                    return (
+                                                        <span className="text-xs text-slate-400 italic">
+                                                            {admin.status === "SUSPENDED" ? "Suspended" : "Active"}
+                                                        </span>
+                                                    );
+                                                })()}
+                                                {/* Show promote button if no superAdmin exists and this is a regular admin */}
+                                                {!hasSuperAdmin && admin.role?.toLowerCase() === "admin" && (
+                                                    <button
+                                                        onClick={() => handlePromote(admin._id)}
+                                                        className="rounded-lg bg-purple-600 px-3 py-1 text-xs font-semibold text-white transition hover:bg-purple-700"
+                                                    >
+                                                        Promote to Super Admin
+                                                    </button>
+                                                )}
+                                            </div>
                                         </td>
                                     </tr>
                                 ))

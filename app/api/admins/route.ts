@@ -6,7 +6,9 @@ import { requireAdmin } from "@/lib/auth";
 export async function GET(request: NextRequest) {
     try {
         const usersCollection = await getUsersCollection();
-        const adminCount = await usersCollection.countDocuments({ role: "admin" });
+        const adminCount = await usersCollection.countDocuments({
+            $or: [{ role: "admin" }, { role: "superAdmin" }]
+        });
 
         // If admins exist, require authentication
         // If no admins exist, allow access for first admin creation
@@ -15,7 +17,7 @@ export async function GET(request: NextRequest) {
         }
 
         const admins = await usersCollection
-            .find({ role: "admin" })
+            .find({ $or: [{ role: "admin" }, { role: "superAdmin" }] })
             .sort({ createdAt: -1 })
             .toArray();
 

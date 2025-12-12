@@ -29,6 +29,7 @@ export default function AdminDashboard() {
     const [error, setError] = useState("");
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const [currentUser, setCurrentUser] = useState<{ role?: string } | null>(null);
 
     const verifyToken = async () => {
         try {
@@ -50,6 +51,9 @@ export default function AdminDashboard() {
                 localStorage.removeItem("adminUser");
                 router.push("/admin/login");
                 return false;
+            }
+            if (data.user) {
+                setCurrentUser(data.user);
             }
             return true;
         } catch {
@@ -163,12 +167,14 @@ export default function AdminDashboard() {
                         >
                             + New Blog
                         </Link>
-                        <Link
-                            href="/admin/admins"
-                            className="rounded-lg border-2 border-brand-purple px-4 py-2 font-semibold text-brand-purple transition hover:bg-purple-50"
-                        >
-                            Manage Admins
-                        </Link>
+                        {currentUser && currentUser.role?.toLowerCase() === "superadmin" && (
+                            <Link
+                                href="/admin/admins"
+                                className="rounded-lg border-2 border-brand-purple px-4 py-2 font-semibold text-brand-purple transition hover:bg-purple-50"
+                            >
+                                Manage Admins
+                            </Link>
+                        )}
                         <button
                             onClick={handleLogout}
                             className="rounded-lg border-2 border-slate-300 px-4 py-2 font-semibold text-slate-700 transition hover:bg-slate-100"
