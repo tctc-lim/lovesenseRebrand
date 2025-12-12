@@ -308,7 +308,7 @@ export default function ServicesPage() {
                                     <p className="text-xl font-semibold text-white">
                                         Healing is possible. Growth is possible. You don&apos;t have to do it alone.
                                     </p>
-                                    <div className="mt-4 flex flex-wrap gap-4">
+                                    <div className="mt-4 flex flex-wrap justify-center gap-4">
                                         <Link
                                             href="/booking"
                                             className="inline-flex items-center gap-2 rounded-full bg-white px-8 py-4 text-base font-semibold text-brand-purple shadow-xl transition hover:-translate-y-1 hover:shadow-2xl"

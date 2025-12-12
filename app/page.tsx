@@ -58,13 +58,13 @@ const whyChooseUs = [
 const books = [
   {
     title: "How To Make Your Marriage Work",
-    image: "/images/books/lovesense-book1.jfif",
+    image: "/images/books/lovesense-book1.jpg",
     description: "A practical, comforting guide for couples who want to reconnect.",
     buyLink: "#",
   },
   {
     title: "How To Heal From Heartbreak & Be Whole Again",
-    image: "/images/books/lovesense-book2.jfif",
+    image: "/images/books/lovesense-book2.jpg",
     description: "Gentle steps to process pain, rebuild confidence, and move forward.",
     buyLink: "#",
   },
